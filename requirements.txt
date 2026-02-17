@@ -1,0 +1,7 @@
+# NewsSpY Dashboard Requirements
+streamlit
+requests
+pandas
+matplotlib
+seaborn
+plotly

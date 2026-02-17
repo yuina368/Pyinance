@@ -1,0 +1,15 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=NewsSpY Dashboard
+Comment=NYSE News Analysis & Sentiment Scoring Dashboard
+Exec=/home/yuina/デスクトップ/newspy/start_dashboard.sh
+Icon=utilities-terminal
+Terminal=false
+Categories=Development;Utility;Office;Finance;
+Keywords=News;Dashboard;Analytics;Sentiment;Stock;NYSE;
+X-GNOME-FullName=NewsSpY Dashboard - NYSE News Sentiment Analysis
+StartupNotify=true
+StartupWMClass=streamlit
+Path=/home/yuina/デスクトップ/newspy
+Name[ja]=NewsSpY ダッシュボード
