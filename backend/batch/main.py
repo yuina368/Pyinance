@@ -8,6 +8,8 @@ import sys
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -20,6 +22,9 @@ from app.database import (
 from app.services.sentiment_analyzer import SentimentAnalyzer
 from app.services.score_calculator import ScoreCalculator
 from batch.news_fetcher import NewsAPIFetcher
+
+# Thread-safe counters
+lock = threading.Lock()
 
 class NewsSpYBatchProcessor:
     """メインバッチプロセッサ"""
@@ -92,8 +97,8 @@ class NewsSpYBatchProcessor:
                 print(f"      • {ticker}: {name}")
     
     def _fetch_articles(self):
-        """記事を取得"""
-        for company in NYSE_COMPANIES:
+        """記事を取得（並列処理）"""
+        def fetch_company_articles(company):
             ticker = company["ticker"]
             name = company["name"]
             
@@ -101,10 +106,10 @@ class NewsSpYBatchProcessor:
             
             # NewsAPIから記事取得
             articles = self.fetcher.get_articles(ticker, name, days=30, page_size=100)
-            self.articles_fetched += len(articles)
             
             # DBに追加
             company_id = get_company_by_ticker(ticker)
+            added_count = 0
             if company_id:
                 for article in articles:
                     success = add_article(
@@ -116,42 +121,83 @@ class NewsSpYBatchProcessor:
                         published_at=article["published_at"]
                     )
                     if success:
-                        self.articles_added += 1
+                        added_count += 1
             
             print(f" ({len(articles)} articles)")
+            return len(articles), added_count
+        
+        # 並列処理（最大10スレッド）
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            futures = [executor.submit(fetch_company_articles, company) 
+                      for company in NYSE_COMPANIES]
+            
+            for future in as_completed(futures):
+                fetched, added = future.result()
+                with lock:
+                    self.articles_fetched += fetched
+                    self.articles_added += added
     
     def _analyze_sentiment(self):
-        """感情分析を実行"""
+        """感情分析を実行（並列処理）"""
         import sqlite3
+        from app.database import save_news_sentiment
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         
         # センチメント未分析の記事を取得
         cursor.execute("""
-            SELECT id, title, content 
-            FROM articles 
-            WHERE sentiment_score IS NULL
+            SELECT a.id, a.title, a.content, a.published_at, c.ticker
+            FROM articles a
+            JOIN companies c ON a.company_id = c.id
+            WHERE a.sentiment_score IS NULL
             LIMIT 1000
         """)
         
         articles = cursor.fetchall()
         analyzed_count = 0
         
-        for article_id, title, content in articles:
+        def analyze_article(article):
+            article_id, title, content, published_at, ticker = article
+            
             # テキスト結合
             text = f"{title} {content}"
             
             # センチメント分析
             score, confidence = self.sentiment_analyzer.analyze(text)
             
-            # DB更新
+            # ラベルの決定
+            if score > 0:
+                label = "positive"
+            elif score < 0:
+                label = "negative"
+            else:
+                label = "neutral"
+            
+            # DB更新（articlesテーブル）
             cursor.execute("""
                 UPDATE articles 
                 SET sentiment_score = ?, sentiment_confidence = ?
                 WHERE id = ?
             """, (score, confidence, article_id))
             
-            analyzed_count += 1
+            # news_sentimentsテーブルにも保存
+            save_news_sentiment(
+                ticker=ticker,
+                published_at=published_at,
+                sentiment_score=score,
+                label=label
+            )
+            
+            return 1
+        
+        # 並列処理（最大5スレッド）
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            futures = [executor.submit(analyze_article, article) 
+                      for article in articles]
+            
+            for future in as_completed(futures):
+                with lock:
+                    analyzed_count += future.result()
         
         conn.commit()
         conn.close()

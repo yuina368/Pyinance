@@ -1,0 +1,222 @@
+[
+  {
+    "ticker": "AAPL",
+    "name": "Apple Inc.",
+    "keywords": ["Apple", "iPhone", "iPad", "Mac", "MacBook", "iOS", "Tim Cook"]
+  },
+  {
+    "ticker": "MSFT",
+    "name": "Microsoft Corporation",
+    "keywords": ["Microsoft", "Windows", "Azure", "Office", "Satya Nadella", "Xbox"]
+  },
+  {
+    "ticker": "GOOGL",
+    "name": "Alphabet Inc.",
+    "keywords": ["Google", "Alphabet", "Android", "Chrome", "Sundar Pichai", "YouTube"]
+  },
+  {
+    "ticker": "AMZN",
+    "name": "Amazon.com Inc.",
+    "keywords": ["Amazon", "AWS", "Jeff Bezos", "Andy Jassy", "Prime", "Kindle"]
+  },
+  {
+    "ticker": "TSLA",
+    "name": "Tesla Inc.",
+    "keywords": ["Tesla", "Elon Musk", "Electric Vehicle", "EV", "Cybertruck", "Model 3"]
+  },
+  {
+    "ticker": "META",
+    "name": "Meta Platforms Inc.",
+    "keywords": ["Meta", "Facebook", "Instagram", "WhatsApp", "Mark Zuckerberg", "Metaverse"]
+  },
+  {
+    "ticker": "NVDA",
+    "name": "NVIDIA Corporation",
+    "keywords": ["NVIDIA", "GPU", "Jensen Huang", "AI chip", "GeForce", "CUDA"]
+  },
+  {
+    "ticker": "NFLX",
+    "name": "Netflix Inc.",
+    "keywords": ["Netflix", "Reed Hastings", "Streaming", "Ted Sarandos"]
+  },
+  {
+    "ticker": "CRM",
+    "name": "Salesforce Inc.",
+    "keywords": ["Salesforce", "Marc Benioff", "Cloud CRM", "Einstein"]
+  },
+  {
+    "ticker": "ADOBE",
+    "name": "Adobe Inc.",
+    "keywords": ["Adobe", "Photoshop", "Creative Cloud", "Shantanu Narayen"]
+  },
+  {
+    "ticker": "JPM",
+    "name": "JPMorgan Chase & Co.",
+    "keywords": ["JPMorgan", "Jamie Dimon", "Chase Bank", "Investment Banking"]
+  },
+  {
+    "ticker": "BAC",
+    "name": "Bank of America Corporation",
+    "keywords": ["Bank of America", "Brian Moynihan", "Merrill Lynch"]
+  },
+  {
+    "ticker": "WFC",
+    "name": "Wells Fargo & Company",
+    "keywords": ["Wells Fargo", "Charlie Scharf"]
+  },
+  {
+    "ticker": "GS",
+    "name": "Goldman Sachs Group Inc.",
+    "keywords": ["Goldman Sachs", "David Solomon", "Investment Banking"]
+  },
+  {
+    "ticker": "MS",
+    "name": "Morgan Stanley",
+    "keywords": ["Morgan Stanley", "Ted Pick", "James Gorman"]
+  },
+  {
+    "ticker": "BLK",
+    "name": "BlackRock Inc.",
+    "keywords": ["BlackRock", "Larry Fink", "iShares", "ETF"]
+  },
+  {
+    "ticker": "ICE",
+    "name": "Intercontinental Exchange Inc.",
+    "keywords": ["ICE", "NYSE", "Jeffrey Sprecher", "New York Stock Exchange"]
+  },
+  {
+    "ticker": "CME",
+    "name": "CME Group Inc.",
+    "keywords": ["CME", "Chicago Mercantile", "Terry Duffy", "Futures"]
+  },
+  {
+    "ticker": "JNJ",
+    "name": "Johnson & Johnson",
+    "keywords": ["Johnson & Johnson", "J&J", "Joaquin Duato", "Pharmaceutical"]
+  },
+  {
+    "ticker": "UNH",
+    "name": "UnitedHealth Group Inc.",
+    "keywords": ["UnitedHealth", "Andrew Witty", "Optum", "Health Insurance"]
+  },
+  {
+    "ticker": "PFE",
+    "name": "Pfizer Inc.",
+    "keywords": ["Pfizer", "Albert Bourla", "Vaccine", "Pharmaceutical"]
+  },
+  {
+    "ticker": "ABBV",
+    "name": "AbbVie Inc.",
+    "keywords": ["AbbVie", "Richard Gonzalez", "Humira", "Pharmaceutical"]
+  },
+  {
+    "ticker": "MRK",
+    "name": "Merck & Co. Inc.",
+    "keywords": ["Merck", "Kenneth Frazier", "Pharmaceutical", "Keytruda"]
+  },
+  {
+    "ticker": "TMO",
+    "name": "Thermo Fisher Scientific",
+    "keywords": ["Thermo Fisher", "Marc Casper", "Scientific Instruments"]
+  },
+  {
+    "ticker": "LLY",
+    "name": "Eli Lilly and Company",
+    "keywords": ["Eli Lilly", "David Ricks", "Pharmaceutical", "Insulin"]
+  },
+  {
+    "ticker": "WMT",
+    "name": "Walmart Inc.",
+    "keywords": ["Walmart", "Doug McMillon", "Retail", "Sam's Club"]
+  },
+  {
+    "ticker": "KO",
+    "name": "The Coca-Cola Company",
+    "keywords": ["Coca-Cola", "James Quincey", "Beverage", "Coke"]
+  },
+  {
+    "ticker": "PEP",
+    "name": "PepsiCo Inc.",
+    "keywords": ["PepsiCo", "Ramon Laguarta", "Pepsi", "Frito-Lay"]
+  },
+  {
+    "ticker": "COST",
+    "name": "Costco Wholesale Corporation",
+    "keywords": ["Costco", "Ron Vachris", "Wholesale", "Membership"]
+  },
+  {
+    "ticker": "MCD",
+    "name": "McDonald's Corporation",
+    "keywords": ["McDonald's", "Chris Kempczinski", "Fast Food", "Big Mac"]
+  },
+  {
+    "ticker": "NKE",
+    "name": "Nike Inc.",
+    "keywords": ["Nike", "John Donahoe", "Athletic", "Sneakers", "Jordan"]
+  },
+  {
+    "ticker": "LOW",
+    "name": "Lowe's Companies Inc.",
+    "keywords": ["Lowe's", "Marvin Ellison", "Home Improvement", "Hardware"]
+  },
+  {
+    "ticker": "V",
+    "name": "Visa Inc.",
+    "keywords": ["Visa", "Al Kelly", "Payment", "Credit Card"]
+  },
+  {
+    "ticker": "MA",
+    "name": "Mastercard Incorporated",
+    "keywords": ["Mastercard", "Michael Miebach", "Payment", "Credit Card"]
+  },
+  {
+    "ticker": "AXP",
+    "name": "American Express Company",
+    "keywords": ["American Express", "Amex", "Stephen Squeri", "Credit Card"]
+  },
+  {
+    "ticker": "XOM",
+    "name": "Exxon Mobil Corporation",
+    "keywords": ["Exxon Mobil", "Darren Woods", "Oil", "Energy", "Gas"]
+  },
+  {
+    "ticker": "CVX",
+    "name": "Chevron Corporation",
+    "keywords": ["Chevron", "Mike Wirth", "Oil", "Energy", "Gas"]
+  },
+  {
+    "ticker": "BA",
+    "name": "Boeing Company",
+    "keywords": ["Boeing", "Dave Calhoun", "Aerospace", "Aircraft", "737"]
+  },
+  {
+    "ticker": "HON",
+    "name": "Honeywell International Inc.",
+    "keywords": ["Honeywell", "Darius Adamczyk", "Aerospace", "Industrial"]
+  },
+  {
+    "ticker": "GE",
+    "name": "General Electric Company",
+    "keywords": ["General Electric", "GE", "Larry Culp", "Aerospace", "Healthcare"]
+  },
+  {
+    "ticker": "VZ",
+    "name": "Verizon Communications Inc.",
+    "keywords": ["Verizon", "Hans Vestberg", "Telecom", "5G", "Wireless"]
+  },
+  {
+    "ticker": "T",
+    "name": "AT&T Inc.",
+    "keywords": ["AT&T", "John Stankey", "Telecom", "5G", "Wireless"]
+  },
+  {
+    "ticker": "CMCSA",
+    "name": "Comcast Corporation",
+    "keywords": ["Comcast", "Brian Roberts", "Cable", "NBCUniversal", "Peacock"]
+  },
+  {
+    "ticker": "DIS",
+    "name": "The Walt Disney Company",
+    "keywords": ["Disney", "Bob Iger", "Entertainment", "Theme Parks", "Streaming"]
+  }
+]

@@ -1,322 +1,404 @@
-# NewsSpY - NYSEニュース感情分析ダッシュボード
+# NewsSpY - US Stock Sentiment Analysis Dashboard
 
-NYSE（ニューヨーク証券取引所）上場企業のニュース記事を収集し、感情分析を行って企業ごとのスコアを算出・可視化するWebアプリケーションです。
+米国株（S&P 500相当）のニュースを自動取得し、FinBERT AIモデルを用いて感情解析を行い、そのスコアを可視化するWebアプリケーションです。
 
-## 📋 概要
+## 🚀 特徴
 
-NewsSpYは、以下の機能を提供するニュース分析プラットフォームです：
+- **自動ニュース収集**: NewsAPIおよびyfinanceから毎日自動的にニュースを収集
+- **AI感情解析**: 金融特化型AIモデル「FinBERT」を用いて感情解析（ポジティブ/ネガティブ/ニュートラル）を実行
+- **感情ヒートマップ**: S&P 500の各銘柄の感情スコアをタイル状に可視化
+- **銘柄詳細**: 特定銘柄の感情スコアの時系列推移を折れ線グラフで表示
+- **検索機能**: 500社のリストから銘柄を検索
+- **リアルタイム更新**: 最新のニュースと感情スコアをリアルタイムで反映
 
-- **ニュース収集**: NewsAPIを通じてNYSE上場企業のニュース記事を自動収集
-- **感情分析**: 記事タイトルと本文からポジティブ/ネガティブな感情を分析
-- **スコア計算**: 感情分析結果に基づいて企業ごとのスコアを算出（時間減衰を考慮）
-- **可視化ダッシュボード**: Streamlitベースのインタラクティブなダッシュボードで結果を表示
+## 🛠 技術スタック
 
-## 🏗️ アーキテクチャ
+### Backend
+- **FastAPI**: 高性能なPython Webフレームワーク
+- **Python 3.10+**: メインプログラミング言語
+- **FinBERT**: 金融特化型AI感情解析モデル（Hugging Face Transformers）
+- **SQLite**: データベース（初期フェーズ）
+- **NewsAPI**: ニュースデータソース
+- **yfinance**: Yahoo Financeからのニュース取得
+
+### Frontend
+- **Streamlit**: PythonベースのWebアプリケーションフレームワーク
+- **Plotly**: インタラクティブなデータ可視化
+- **Pandas**: データ操作と分析
+
+### Infrastructure
+- **Docker**: コンテナ化
+- **Docker Compose**: マルチコンテナ管理
+- **Nginx**: リバースプロキシ
+
+## 📁 プロジェクト構造
 
 ```
 newspy/
-├── backend/                 # FastAPIバックエンド
+├── backend/
 │   ├── app/
-│   │   ├── main.py         # APIエントリーポイント
-│   │   ├── config.py       # 設定ファイル
-│   │   ├── database.py     # SQLiteデータベース操作
-│   │   ├── routes/         # APIルート
-│   │   │   ├── articles.py # 記事関連API
-│   │   │   └── scores.py   # スコア関連API
-│   │   └── services/       # ビジネスロジック
-│   │       ├── sentiment_analyzer.py  # 感情分析
+│   │   ├── main.py                 # FastAPIアプリケーションエントリーポイント
+│   │   ├── config.py               # 設定ファイル
+│   │   ├── database.py             # データベース操作
+│   │   ├── routes/
+│   │   │   ├── auth.py            # 認証API
+│   │   │   ├── sentiments.py      # 感情スコアAPI
+│   │   │   ├── scores.py         # スコアAPI
+│   │   │   └── articles.py       # 記事API
+│   │   └── services/
+│   │       ├── auth.py            # 認証サービス
+│   │       ├── sentiment_analyzer.py  # FinBERT感情分析
 │   │       └── score_calculator.py    # スコア計算
-│   └── batch/
-│       ├── main.py         # バッチ処理メイン
-│       └── news_fetcher.py # NewsAPI連携
-├── frontend/
-│   └── dashboard.py        # Streamlitダッシュボード
-├── start_dashboard.sh      # 起動スクリプト
-└── requirements.txt        # フロントエンド依存関係
+│   ├── batch/
+│   │   ├── main.py                 # バッチ処理メイン
+│   │   └── news_fetcher.py         # NewsAPI連携
+│   ├── companies.json              # 企業マスタ
+│   ├── requirements.txt            # Python依存関係
+│   └── Dockerfile                # Dockerイメージ
+├── dashboard.py                   # Streamlitダッシュボード
+├── nginx/
+│   └── nginx.conf                # Nginxリバースプロキシ設定
+├── docker-compose.yml             # Docker Compose設定
+├── .env.example                 # 環境変数テンプレート
+└── README.md                    # プロジェクトドキュメント
 ```
 
-## 🚀 インストール
+## 🚀 クイックスタート
 
 ### 前提条件
 
-- Python 3.8以上
-- pip
+- Docker 20.10+ （[インストールガイド](DOCKER_INSTALL.md)を参照）
+- Docker Compose 2.0+ （またはローカル開発環境）
+- Git
 
-### 手順
+> **💡 Dockerがインストールされていない場合**: [Dockerインストールガイド](DOCKER_INSTALL.md)を参照してください。
 
-1. リポジトリをクローンまたはダウンロード
+### インストール
 
-2. バックエンドの依存関係をインストール
+#### 方法1: Docker Composeを使用（推奨）
+
+1. リポジトリをクローン
 ```bash
-cd backend
-pip install -r requirements.txt
+git clone <repository-url>
+cd newspy
 ```
 
-3. フロントエンドの依存関係をインストール
-```bash
-cd ..
-pip install -r requirements.txt
-```
-
-4. 環境変数を設定
-
-`.env.example`ファイルを`.env`にコピーして、NewsAPIのAPIキーを設定：
-
+2. 環境変数を設定
 ```bash
 cp .env.example .env
+# .envファイルを編集してNewsAPIキーを設定
 ```
 
-`.env`ファイルを編集：
-
-```env
-NEWSAPI_KEY=your_newsapi_key_here
-DATABASE_URL=newspy.db
-```
-
-> **注意**: NewsAPIのAPIキーは [https://newsapi.org/](https://newsapi.org/) から無料で取得できます。
-
-### WSL環境での注意点（ディスク容量不足対策）
-
-WSL環境でpipインストール時に「No space left on device」エラーが発生する場合、以下の対策が自動的に適用されます：
-
-- `start_dashboard.sh`および`backend/batch_process.sh`スクリプトが自動的に一時ディレクトリを`./tmp`に設定します
-- 手動で設定する場合は、以下を実行してください：
-
+3. Docker Composeで起動
 ```bash
-mkdir -p tmp
-export TMPDIR=./tmp
+docker-compose up -d
 ```
 
-この問題は、WSLの`/tmp`ディレクトリがメモリベース（tmpfs）であり、容量が限られているために発生します。
+4. アプリケーションにアクセス
+- Dashboard: http://localhost:8501
+- Backend API: http://localhost:8000/api/docs
+- Health Check: http://localhost:8000/api/health/
 
-### WSL環境での注意点（ネットワーク接続）
+#### 方法2: ローカル開発（Dockerなし）
 
-WSL環境では、以下の点に注意してください：
+Docker Composeがインストールされていない場合、ローカルで開発できます。
 
-- ヘルスチェックに`curl`や`wget`の代わりにPythonの`requests`モジュールを使用します
-- ブラウザ起動には`cmd.exe`を使用してWindowsのブラウザを開きます
-- サーバーは`0.0.0.0`で起動しますが、クライアントからは`127.0.0.1`でアクセスしてください
-
-## 📖 使用方法
-
-### クイックスタート
-
-起動スクリプトを使用して、バックエンドとフロントエンドを同時に起動：
-
-```bash
-chmod +x start_dashboard.sh
-./start_dashboard.sh
-```
-
-または、以下の手順で個別に起動：
-
-#### 1. バックエンドAPIの起動
+##### Backendの起動
 
 ```bash
 cd backend
+
+# 仮想環境を作成
+python -m venv venv
+
+# 仮想環境をアクティベート
+# Linux/Mac:
+source venv/bin/activate
+# Windows:
+venv\Scripts\activate
+
+# 依存関係をインストール
+pip install -r requirements.txt
+
+# データベースを初期化
+python -c "from app.database import init_database; init_database()"
+
+# サーバーを起動
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-#### 2. ダッシュボードの起動
-
-別のターミナルで：
+##### Frontendの起動（Streamlitダッシュボード）
 
 ```bash
-streamlit run frontend/dashboard.py
+# 依存関係をインストール
+pip install -r requirements.txt
+
+# ダッシュボードを起動
+streamlit run dashboard.py
 ```
 
-#### 3. バッチ処理の実行
+##### アプリケーションにアクセス
+- Dashboard: http://localhost:8501
+- Backend API: http://localhost:8000/api/docs
+- Health Check: http://localhost:8000/api/health/
 
-ニュース収集と感情分析を実行：
+#### Docker Composeのインストール
 
+Docker Composeをインストールするには、以下のコマンドを実行してください：
+
+**Linux:**
 ```bash
-cd backend
-python -m batch.main
+# 最新バージョンをダウンロード
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+
+# 実行権限を付与
+sudo chmod +x /usr/local/bin/docker-compose
+
+# バージョンを確認
+docker-compose --version
 ```
 
-または：
-
+**Mac (Homebrewを使用):**
 ```bash
-bash backend/batch_process.sh
+brew install docker-compose
 ```
 
-### アクセス
+**Windows:**
+Docker Desktopをインストールすると、Docker Composeも含まれています。
+https://www.docker.com/products/docker-desktop/
 
-- ダッシュボード: http://127.0.0.1:8502
-- APIドキュメント: http://127.0.0.1:8000/docs
-- APIヘルスチェック: http://127.0.0.1:8000/api/health/
+## 📊 APIエンドポイント
 
-## 📊 ダッシュボード機能
+### 認証API
 
-### タブ1: 📈 ランキング
-- 指定日付の企業スコアランキングを表示
-- ポジティブ/ネガティブ/ニュートラルの企業数を集計
-- スコア分布グラフと記事数分布を表示
+#### ログイン（トークン取得）
+```
+POST /api/auth/login
+Content-Type: application/x-www-form-urlencoded
 
-### タブ2: 📰 記事
-- 企業ごとのニュース記事一覧を表示
-- 感情スコアと信頼度を表示
-- 感情フィルタ（ポジティブ/ネガティブ/すべて）
+username=admin&password=admin123
+```
 
-### タブ3: 📊 企業スコア
-- 選択した企業の過去30日間のスコア推移をグラフ表示
-- 日次スコアデータのテーブル表示
+#### 現在のユーザー情報取得
+```
+GET /api/auth/me
+Authorization: Bearer <access_token>
+```
 
-### タブ4: 📋 企業詳細
-- 企業情報の表示
-- 最新のニュース記事一覧
+#### トークン更新
+```
+POST /api/auth/refresh
+Authorization: Bearer <access_token>
+```
 
-## 🔌 APIエンドポイント
+### 感情スコアAPI
 
-### ヘルスチェック
+#### 日次感情スコア取得（ヒートマップ用）
+```
+GET /api/sentiments/daily?target_date=YYYY-MM-DD
+```
+
+#### 銘柄別感情履歴取得（チャート用）
+```
+GET /api/sentiments/{ticker}?days=30
+```
+
+#### 感情サマリー取得
+```
+GET /api/sentiments/summary
+```
+
+### その他API
+
+#### ヘルスチェック
 ```
 GET /api/health/
 ```
 
-### 企業一覧
+#### モデルステータス
 ```
-GET /api/companies/
-```
-
-### 記事取得
-```
-GET /api/articles/?limit=50&company_id=1&sentiment_filter=positive
+GET /api/model/status
 ```
 
-### ランキング取得
+詳細なAPIドキュメントは、[http://localhost/api/docs](http://localhost/api/docs) で確認できます。
+
+## 🔄 バッチ処理
+
+バッチ処理は以下の手順で実行されます：
+
+1. **データベース初期化**: テーブルを作成
+2. **企業登録**: companies.jsonから企業を登録
+3. **ニュース取得**: NewsAPIから過去24時間のニュースを取得
+4. **キーワードフィルタリング**: 企業名とキーワードでニュースをフィルタリング
+5. **感情解析**: FinBERTで感情解析を実行
+6. **データ保存**: 解析結果をデータベースに保存
+
+### 手動実行
+
+#### Docker環境の場合
+
+```bash
+# Dockerコンテナ内で実行
+docker-compose exec backend python batch/main.py
 ```
-GET /api/scores/ranking/{date}?limit=100&sentiment_filter=positive
+
+#### ローカル環境の場合
+
+```bash
+# バッチ処理スクリプトを使用（推奨）
+cd backend
+bash run_batch.sh
+
+# または直接実行
+cd backend
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+python batch/main.py
 ```
 
-### 企業スコア履歴
+### 自動実行（cron）
+
+cronを使用して定期的にバッチ処理を実行できます：
+
+```bash
+# 毎日午前9時に実行（Docker環境）
+0 9 * * * cd /app && python batch/main.py
+
+# 毎日午前9時に実行（ローカル環境）
+0 9 * * * cd /path/to/backend && bash run_batch.sh
 ```
-GET /api/scores/company/{ticker}?days=30
+
+## 🎨 データ構造
+
+### 企業マスタ (companies.json)
+
+```json
+[
+  {
+    "ticker": "AAPL",
+    "name": "Apple Inc.",
+    "keywords": ["Apple", "iPhone", "iPad", "Mac", "iOS", "Tim Cook"]
+  }
+]
 ```
 
-## 🧠 感情分析アルゴリズム
+### データベーステーブル
 
-NewsSpYはシンプルなキーワードベースの感情分析を使用しています：
+#### news_sentimentsテーブル
 
-- **ポジティブワード**: excellent, great, good, positive, gain, surge, etc.
-- **ネガティブワード**: poor, bad, negative, loss, decline, crash, etc.
-
-スコアは -1.0（最もネガティブ）から 1.0（最もポジティブ）の範囲で計算されます。
-
-信頼度は、感情ワードの数に対するテキスト全体の単語数の比率で計算されます。
-
-## 📈 スコア計算方法
-
-企業スコアは以下の要素を考慮して計算されます：
-
-1. **感情比率**: (ポジティブ記事数 - ネガティブ記事数) / 総記事数
-2. **平均感情スコア**: すべての記事の感情スコアの平均
-3. **時間減衰**: 最新の記事ほど高い重みを付与（1時間ごとに10%減衰）
-
-最終スコア = `感情比率 × 100 + 平均感情スコア × 50`
-
-## 🗄️ データベース構造
-
-### companies テーブル
-- `id`: 企業ID
-- `ticker`: ティッカーシンボル（例: AAPL）
-- `name`: 企業名
-- `created_at`: 作成日時
-
-### articles テーブル
-- `id`: 記事ID
-- `company_id`: 企業ID
-- `title`: 記事タイトル
-- `content`: 記事本文
-- `source`: ニュースソース
-- `source_url`: 記事URL
-- `published_at`: 公開日時
-- `sentiment_score`: 感情スコア
-- `sentiment_confidence`: 信頼度
-- `fetched_at`: 取得日時
-
-### scores テーブル
-- `id`: スコアID
-- `company_id`: 企業ID
-- `date`: 対象日付
-- `score`: スコア
-- `article_count`: 記事数
-- `avg_sentiment`: 平均感情スコア
-- `rank`: ランク
-- `created_at`: 作成日時
-
-## 🏢 対象企業
-
-以下のNYSE/NASDAQ上場企業を追跡しています：
-
-### テクノロジー
-- AAPL (Apple), MSFT (Microsoft), GOOGL (Alphabet), AMZN (Amazon), TSLA (Tesla), META (Meta), NVDA (NVIDIA), NFLX (Netflix), CRM (Salesforce), ADOBE (Adobe)
-
-### 金融
-- JPM (JPMorgan Chase), BAC (Bank of America), WFC (Wells Fargo), GS (Goldman Sachs), MS (Morgan Stanley), BLK (BlackRock), ICE (Intercontinental Exchange), CME (CME Group)
-
-### ヘルスケア
-- JNJ (Johnson & Johnson), UNH (UnitedHealth Group), PFE (Pfizer), ABBV (AbbVie), MRK (Merck), TMO (Thermo Fisher Scientific), LLY (Eli Lilly)
-
-### 消費財/小売
-- WMT (Walmart), KO (Coca-Cola), PEP (PepsiCo), COST (Costco), MCD (McDonald's), NKE (Nike), LOW (Lowe's)
-
-### 決済/カード
-- V (Visa), MA (Mastercard), AXP (American Express)
-
-### エネルギー/産業
-- XOM (Exxon Mobil), CVX (Chevron), BA (Boeing), HON (Honeywell), GE (General Electric)
-
-### コミュニケーション
-- VZ (Verizon), T (AT&T), CMCSA (Comcast), DIS (Disney)
+| カラム | 型 | 説明 |
+|--------|------|------|
+| id | INTEGER | 主キー |
+| ticker | TEXT | 銘柄コード（Indexed） |
+| published_at | TIMESTAMP | ニュース公開日時 |
+| sentiment_score | REAL | FinBERTのスコア（-1.0 to 1.0） |
+| label | TEXT | positive / negative / neutral |
+| created_at | TIMESTAMP | レコード作成日 |
+| url_hash | TEXT | ニュースURLのハッシュ（ユニーク制約） |
 
 ## 🔧 設定
 
 ### 環境変数
 
 | 変数名 | 説明 | デフォルト値 |
-|--------|------|--------------|
-| `NEWSAPI_KEY` | NewsAPIのAPIキー | `demo` |
-| `DATABASE_URL` | データベースファイルパス | `newspy.db` |
+|----------|------|------------|
+| NEWSAPI_KEY | NewsAPIのAPIキー | demo |
+| DATABASE_URL | データベースのパス | newspy.db |
+| JWT_SECRET_KEY | JWTトークンの署名キー | your-secret-key-change-this-in-production |
+| ACCESS_TOKEN_EXPIRE_MINUTES | アクセストークンの有効期限（分） | 60 |
+| ALLOWED_ORIGINS | 許可するオリジン（カンマ区切り） | http://localhost:3000,http://localhost:8501 |
 
-### 感情分析閾値
+### NewsAPIキーの取得
 
-- `SENTIMENT_THRESHOLD_POSITIVE`: 0.05
-- `SENTIMENT_THRESHOLD_NEGATIVE`: -0.05
+1. [NewsAPI](https://newsapi.org/) にアカウント登録
+2. APIキーを取得
+3. `.env`ファイルに設定
 
-## 📝 依存関係
+## 📝 開発
 
-### バックエンド
-- fastapi==0.129.0
-- uvicorn==0.40.0
-- newsapi==0.1.1
-- requests==2.32.5
-- python-dateutil==2.9.0.post0
-- python-dotenv==1.0.0
-- yfinance==0.2.28
+### Backend開発
 
-### フロントエンド
-- streamlit
-- requests
-- pandas
-- matplotlib
-- seaborn
-- plotly
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
 
-## 🤝 貢献
+### Frontend開発
 
-バグ報告や機能リクエストはIssueにてお願いします。
+```bash
+cd frontend
+npm install
+npm start
+```
+
+### テスト
+
+```bash
+# Backendテスト
+cd backend
+pytest
+
+# Frontendテスト
+cd frontend
+npm test
+```
+
+## 🐛 トラブルシューティング
+
+### FinBERTモデルが読み込めない
+
+```bash
+# モデルキャッシュをクリア
+rm -rf ~/.cache/huggingface
+
+# 再インストール
+pip install --upgrade transformers torch
+```
+
+### NewsAPIの制限に達した
+
+無料枠の制限を考慮し、以下の対策を実装しています：
+- 1リクエストで可能な限り多くの情報を取得
+- yfinanceをフォールバックとして使用
+- デモデータを提供
+
+### Dockerコンテナが起動しない
+
+```bash
+# コンテナログを確認
+docker-compose logs backend
+docker-compose logs frontend
+docker-compose logs nginx
+
+# 再ビルド
+docker-compose build --no-cache
+docker-compose up -d
+```
 
 ## 📄 ライセンス
 
-このプロジェクトのライセンスについては、別途お問い合わせください。
+MIT License
 
-## ⚠️ 注意事項
+## 🤝 貢献
 
-- NewsAPIの無料プランにはリクエスト数の制限があります
-- 感情分析は簡易的なキーワードベースの実装です
-- デモ版ではデータはローカルのSQLiteに保存されます
-- 本番環境での使用には追加の設定が必要です
+プルリクエストを歓迎します！
+
+## 📧 お問い合わせ
+
+問題やご質問がある場合は、Issueを開いてください。
+
+## 🙏 謝辞
+
+- [FinBERT](https://huggingface.co/ProsusAI/finbert) - 感情解析モデル
+- [NewsAPI](https://newsapi.org/) - ニュースデータ
+- [yfinance](https://github.com/ranaroussi/yfinance) - Yahoo Financeデータ
+- [FastAPI](https://fastapi.tiangolo.com/) - Webフレームワーク
+- [React](https://reactjs.org/) - UIフレームワーク
 
 ---
 
-**NewsSpY** © 2026 | NYSE News Analysis & Sentiment Scoring Dashboard
+**NewsSpY © 2026 | US Stock Sentiment Analysis Dashboard**

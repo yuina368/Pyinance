@@ -38,6 +38,27 @@ cleanup() {
     fi
     wait 2>/dev/null || true
     echo -e "${GREEN}✓ All services stopped${NC}"
+
+    # 一時ディレクトリのクリーンアップ
+    if [ -d "$PROJECT_DIR/tmp" ]; then
+        echo -e "${YELLOW}[*] Cleaning up temporary directory...${NC}"
+        rm -rf "$PROJECT_DIR/tmp"/* 2>/dev/null || true
+        echo -e "${GREEN}✓ Temporary directory cleaned${NC}"
+    fi
+
+    # ログファイルのクリーンアップ（オプション）
+    if [ -d "$BACKEND_DIR/logs" ]; then
+        echo -e "${YELLOW}[*] Cleaning up log files...${NC}"
+        rm -f "$BACKEND_DIR/logs/backend.log" 2>/dev/null || true
+        echo -e "${GREEN}✓ Log files cleaned${NC}"
+    fi
+
+    # Streamlit credentialsのクリーンアップ（オプション）
+    if [ -f "$HOME/.streamlit/credentials.toml" ]; then
+        echo -e "${YELLOW}[*] Cleaning up Streamlit credentials...${NC}"
+        rm -f "$HOME/.streamlit/credentials.toml" 2>/dev/null || true
+        echo -e "${GREEN}✓ Streamlit credentials cleaned${NC}"
+    fi
 }
 
 trap cleanup EXIT INT TERM

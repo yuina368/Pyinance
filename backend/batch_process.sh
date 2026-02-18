@@ -22,6 +22,25 @@ echo "  Project Root: $PROJECT_DIR"
 echo "  Backend Dir: $BACKEND_DIR"
 echo ""
 
+# Cleanup function
+cleanup() {
+    echo ""
+    echo "=========================================="
+    echo "  🧹 Cleaning up..."
+    echo "=========================================="
+
+    # 一時ディレクトリのクリーンアップ
+    if [ -d "$PROJECT_DIR/tmp" ]; then
+        echo "  Cleaning up temporary directory..."
+        rm -rf "$PROJECT_DIR/tmp"/* 2>/dev/null || true
+        echo "  ✓ Temporary directory cleaned"
+    fi
+
+    echo "✓ Cleanup complete!"
+}
+
+trap cleanup EXIT INT TERM
+
 # Activate virtual environment
 if [ -f "$BACKEND_DIR/venv/bin/activate" ]; then
     source "$BACKEND_DIR/venv/bin/activate"

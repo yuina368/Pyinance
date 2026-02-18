@@ -41,12 +41,18 @@ class NewsAPIFetcher:
         return articles[:page_size]  # Limit to page_size
     
     def _get_newsapi_articles(self, ticker: str, company_name: str, days: int, page_size: int) -> List[Dict]:
-        """Fetch articles from NewsAPI"""
+        """Fetch articles from NewsAPI with keyword filtering"""
         
         endpoint = f"{self.base_url}/everything"
         
-        # Search query
-        query = f'"{ticker}" OR "{company_name}"'
+        # Get keywords for this company
+        company_data = next((c for c in NYSE_COMPANIES if c["ticker"] == ticker), None)
+        keywords = company_data.get("keywords", [company_name]) if company_data else [company_name]
+        
+        # Build search query with keywords
+        # Use OR to match any keyword, and include ticker
+        keyword_query = " OR ".join([f'"{kw}"' for kw in keywords])
+        query = f'"{ticker}" OR {keyword_query}'
         
         # Date range
         to_date = datetime.now().date()
@@ -54,8 +60,8 @@ class NewsAPIFetcher:
         
         params = {
             "q": query,
-            "fromDate": str(from_date),
-            "toDate": str(to_date),
+            "from": str(from_date),
+            "to": str(to_date),
             "sortBy": "publishedAt",
             "pageSize": page_size,
             "apiKey": self.api_key
@@ -68,14 +74,23 @@ class NewsAPIFetcher:
             
             articles = []
             for article in data.get("articles", []):
-                articles.append({
-                    "ticker": ticker,
-                    "title": article.get("title", ""),
-                    "content": article.get("description", ""),
-                    "source": article.get("source", {}).get("name", "Unknown"),
-                    "source_url": article.get("url", ""),
-                    "published_at": article.get("publishedAt", "")
-                })
+                # Filter by keywords in title or description
+                title = article.get("title", "")
+                description = article.get("description", "")
+                text = f"{title} {description}".lower()
+                
+                # Check if any keyword matches
+                keyword_match = any(kw.lower() in text for kw in keywords)
+                
+                if keyword_match:
+                    articles.append({
+                        "ticker": ticker,
+                        "title": title,
+                        "content": description,
+                        "source": article.get("source", {}).get("name", "Unknown"),
+                        "source_url": article.get("url", ""),
+                        "published_at": article.get("publishedAt", "")
+                    })
             
             return articles
         
