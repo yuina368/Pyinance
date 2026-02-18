@@ -5,3 +5,5 @@ pandas
 matplotlib
 seaborn
 plotly
+transformers 
+torch 
