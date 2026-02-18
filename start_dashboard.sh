@@ -8,6 +8,10 @@ PROJECT_DIR="$SCRIPT_DIR"
 BACKEND_DIR="$PROJECT_DIR/backend"
 FRONTEND_DIR="$PROJECT_DIR/frontend"
 
+# 一時ディレクトリの設定（ディスク容量不足対策）
+mkdir -p "$PROJECT_DIR/tmp"
+export TMPDIR="$PROJECT_DIR/tmp"
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -118,12 +122,12 @@ BACKEND_PID=$!
 
 # Wait for backend ready
 echo -e "${YELLOW}  Waiting for backend to start...${NC}"
-for i in {1..30}; do
-    if curl -s http://localhost:8000/api/health/ > /dev/null 2>&1; then
+for i in {1..60}; do
+    if python -c "import requests; r = requests.get('http://127.0.0.1:8000/api/health/', timeout=2); print('healthy' if r.status_code == 200 else 'failed')" 2>/dev/null | grep -q "healthy"; then
         echo -e "${GREEN}✓ Backend API running on port 8000${NC}"
         break
     fi
-    if [ $i -eq 30 ]; then
+    if [ $i -eq 60 ]; then
         echo -e "${RED}✗ Backend failed to start${NC}"
         echo -e "${YELLOW}  Checking backend logs...${NC}"
         tail -20 logs/backend.log
@@ -151,12 +155,12 @@ STREAMLIT_PID=$!
 
 # Wait for frontend ready
 echo -e "${YELLOW}  Waiting for frontend to start...${NC}"
-for i in {1..10}; do
-    if curl -s http://localhost:8502 > /dev/null 2>&1; then
+for i in {1..20}; do
+    if python -c "import requests; r = requests.get('http://127.0.0.1:8502', timeout=2); print('success' if r.status_code == 200 else 'failed')" 2>/dev/null | grep -q "success"; then
         echo -e "${GREEN}✓ Dashboard running on port 8502${NC}"
         break
     fi
-    if [ $i -eq 10 ]; then
+    if [ $i -eq 20 ]; then
         echo -e "${YELLOW}⚠ Dashboard may still be starting...${NC}"
     fi
     sleep 1
@@ -166,21 +170,25 @@ done
 echo -e "${YELLOW}[4/4] Opening browser...${NC}"
 sleep 1
 if command -v xdg-open &> /dev/null; then
-    xdg-open http://localhost:8502 2>/dev/null &
+    xdg-open http://127.0.0.1:8502 2>/dev/null &
     echo -e "${GREEN}✓ Browser launched${NC}"
 elif command -v open &> /dev/null; then
-    open http://localhost:8502 2>/dev/null &
+    open http://127.0.0.1:8502 2>/dev/null &
+    echo -e "${GREEN}✓ Browser launched${NC}"
+elif command -v cmd.exe &> /dev/null; then
+    # WSL環境でWindowsのブラウザを開く
+    cmd.exe /c start http://127.0.0.1:8502 2>/dev/null &
     echo -e "${GREEN}✓ Browser launched${NC}"
 else
-    echo -e "${YELLOW}⚠ Please open http://localhost:8502 manually${NC}"
+    echo -e "${YELLOW}⚠ Please open http://127.0.0.1:8502 manually${NC}"
 fi
 
 echo ""
 echo -e "${GREEN}═══════════════════════════════════════${NC}"
 echo -e "${GREEN}  ✓ NewsSpY is ready!${NC}"
 echo -e "${GREEN}═══════════════════════════════════════${NC}"
-echo -e "${BLUE}Homepage:${NC} http://localhost:8502"
-echo -e "${BLUE}API:${NC}      http://localhost:8000/api"
+echo -e "${BLUE}Homepage:${NC} http://127.0.0.1:8502"
+echo -e "${BLUE}API:${NC}      http://127.0.0.1:8000/api"
 echo -e "${YELLOW}Press Ctrl+C to stop${NC}\n"
 
 # Keep running

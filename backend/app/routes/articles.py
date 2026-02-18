@@ -2,6 +2,8 @@ from fastapi import APIRouter, HTTPException
 import sqlite3
 from typing import Optional
 
+from app.database import DB_PATH
+
 router = APIRouter(tags=["articles"])
 
 @router.get("/articles/")
@@ -12,7 +14,7 @@ async def get_articles(
     limit: int = 50
 ):
     """Get articles with optional filters"""
-    conn = sqlite3.connect("newspy.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
     query = """

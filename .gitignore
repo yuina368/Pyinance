@@ -36,6 +36,7 @@ ENV/
 # Environment
 .env
 .env.local
+.evn
 
 # Database
 *.db
@@ -44,6 +45,9 @@ ENV/
 # Logs
 *.log
 logs/
+
+# Temp
+tmp/
 
 # Node
 node_modules/

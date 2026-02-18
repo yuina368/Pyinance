@@ -11,6 +11,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 BACKEND_DIR="$SCRIPT_DIR"
 
+# 一時ディレクトリの設定（ディスク容量不足対策）
+mkdir -p "$PROJECT_DIR/tmp"
+export TMPDIR="$PROJECT_DIR/tmp"
+
 echo "=========================================="
 echo "  📰 NewsSpY Batch Processing"
 echo "=========================================="

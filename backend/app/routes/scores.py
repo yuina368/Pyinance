@@ -3,6 +3,8 @@ import sqlite3
 from typing import Optional
 from datetime import datetime, date
 
+from app.database import DB_PATH
+
 router = APIRouter(tags=["scores"])
 
 @router.get("/scores/ranking/{date_str}")
@@ -13,7 +15,7 @@ async def get_ranking(date_str: str, limit: int = 100, sentiment_filter: Optiona
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
     
-    conn = sqlite3.connect("newspy.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
     query = """
@@ -62,7 +64,7 @@ async def get_ranking(date_str: str, limit: int = 100, sentiment_filter: Optiona
 @router.get("/scores/company/{ticker}")
 async def get_company_scores(ticker: str, days: int = 30):
     """Get score history for a specific company"""
-    conn = sqlite3.connect("newspy.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
     cursor.execute("SELECT id FROM companies WHERE ticker = ?", (ticker,))

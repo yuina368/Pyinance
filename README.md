@@ -60,7 +60,13 @@ pip install -r requirements.txt
 
 4. 環境変数を設定
 
-`.env`ファイルを作成し、NewsAPIのAPIキーを設定：
+`.env.example`ファイルを`.env`にコピーして、NewsAPIのAPIキーを設定：
+
+```bash
+cp .env.example .env
+```
+
+`.env`ファイルを編集：
 
 ```env
 NEWSAPI_KEY=your_newsapi_key_here
@@ -68,6 +74,28 @@ DATABASE_URL=newspy.db
 ```
 
 > **注意**: NewsAPIのAPIキーは [https://newsapi.org/](https://newsapi.org/) から無料で取得できます。
+
+### WSL環境での注意点（ディスク容量不足対策）
+
+WSL環境でpipインストール時に「No space left on device」エラーが発生する場合、以下の対策が自動的に適用されます：
+
+- `start_dashboard.sh`および`backend/batch_process.sh`スクリプトが自動的に一時ディレクトリを`./tmp`に設定します
+- 手動で設定する場合は、以下を実行してください：
+
+```bash
+mkdir -p tmp
+export TMPDIR=./tmp
+```
+
+この問題は、WSLの`/tmp`ディレクトリがメモリベース（tmpfs）であり、容量が限られているために発生します。
+
+### WSL環境での注意点（ネットワーク接続）
+
+WSL環境では、以下の点に注意してください：
+
+- ヘルスチェックに`curl`や`wget`の代わりにPythonの`requests`モジュールを使用します
+- ブラウザ起動には`cmd.exe`を使用してWindowsのブラウザを開きます
+- サーバーは`0.0.0.0`で起動しますが、クライアントからは`127.0.0.1`でアクセスしてください
 
 ## 📖 使用方法
 
@@ -114,9 +142,9 @@ bash backend/batch_process.sh
 
 ### アクセス
 
-- ダッシュボード: http://localhost:8501
-- APIドキュメント: http://localhost:8000/docs
-- APIヘルスチェック: http://localhost:8000/api/health/
+- ダッシュボード: http://127.0.0.1:8502
+- APIドキュメント: http://127.0.0.1:8000/docs
+- APIヘルスチェック: http://127.0.0.1:8000/api/health/
 
 ## 📊 ダッシュボード機能
 

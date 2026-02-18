@@ -30,7 +30,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # API Base URL
-API_URL = "http://localhost:8000/api"
+API_URL = "http://127.0.0.1:8000/api"
 
 # ============================================================================
 # Helper Functions

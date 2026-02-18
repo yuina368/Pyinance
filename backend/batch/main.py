@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from app.config import NYSE_COMPANIES, NEWSAPI_KEY
 from app.database import (
     init_database, add_company, add_article, get_company_by_ticker,
-    save_score, get_articles_for_date
+    save_score, get_articles_for_date, DB_PATH
 )
 from app.services.sentiment_analyzer import SentimentAnalyzer
 from app.services.score_calculator import ScoreCalculator
@@ -123,7 +123,7 @@ class NewsSpYBatchProcessor:
     def _analyze_sentiment(self):
         """感情分析を実行"""
         import sqlite3
-        conn = sqlite3.connect("newspy.db")
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         
         # センチメント未分析の記事を取得
@@ -162,7 +162,7 @@ class NewsSpYBatchProcessor:
         import sqlite3
         from datetime import datetime
         
-        conn = sqlite3.connect("newspy.db")
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         
         # 対象日の記事を取得

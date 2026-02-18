@@ -8,7 +8,18 @@ import os
 from datetime import datetime, date
 from typing import List, Dict, Optional
 
-DB_PATH = "newspy.db"
+# Use DATABASE_URL from environment or default to newspy.db
+DB_PATH = os.getenv("DATABASE_URL", "newspy.db")
+
+# Register date adapters for Python 3.12+
+def adapt_date(val):
+    return val.isoformat()
+
+def adapt_datetime(val):
+    return val.isoformat()
+
+sqlite3.register_adapter(date, adapt_date)
+sqlite3.register_adapter(datetime, adapt_datetime)
 
 def init_database():
     """Initialize database tables"""

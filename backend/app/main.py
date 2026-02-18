@@ -13,6 +13,7 @@ from typing import List, Optional
 
 from app.routes.articles import router as articles_router
 from app.routes.scores import router as scores_router
+from app.database import DB_PATH
 
 app = FastAPI(
     title="NewsSpY API",
@@ -41,7 +42,7 @@ async def health_check():
 @app.get("/api/companies/")
 async def get_companies():
     """Get all companies"""
-    conn = sqlite3.connect("newspy.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM companies ORDER BY ticker")
     companies = []
