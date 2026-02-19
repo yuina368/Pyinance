@@ -1,6 +1,3 @@
-import React from 'react';
-import { StockDetail } from './StockDetail';
-
 interface HeatmapProps {
   scores: Array<{
     company: { ticker: string; name: string };
@@ -10,7 +7,7 @@ interface HeatmapProps {
   onStockClick: (ticker: string) => void;
 }
 
-export const Heatmap: React.FC<HeatmapProps> = ({ scores, onStockClick }) => {
+export const Heatmap = ({ scores, onStockClick }: HeatmapProps) => {
   const getScoreColor = (score: number): string => {
     if (score > 0.2) return 'bg-green-600';
     if (score > 0.1) return 'bg-green-500';

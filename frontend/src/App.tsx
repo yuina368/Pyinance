@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { RefreshCw, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Heatmap } from './components/Heatmap';
@@ -14,7 +14,7 @@ const COLORS = {
 };
 
 function App() {
-  const [companies, setCompanies] = useState<Company[]>([]);
+  const [, setCompanies] = useState<Company[]>([]);
   const [scores, setScores] = useState<Score[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);

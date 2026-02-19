@@ -22,9 +22,12 @@
 - **yfinance**: Yahoo Financeからのニュース取得
 
 ### Frontend
-- **Streamlit**: PythonベースのWebアプリケーションフレームワーク
-- **Plotly**: インタラクティブなデータ可視化
-- **Pandas**: データ操作と分析
+- **React 18**: UIフレームワーク
+- **Vite**: 高速なビルドツール
+- **TypeScript**: 型安全なJavaScript
+- **Tailwind CSS**: ユーティリティファーストのCSSフレームワーク
+- **Recharts**: インタラクティブなデータ可視化ライブラリ
+- **Axios**: HTTPクライアント
 
 ### Infrastructure
 - **Docker**: コンテナ化
@@ -55,7 +58,23 @@ newspy/
 │   ├── companies.json              # 企業マスタ
 │   ├── requirements.txt            # Python依存関係
 │   └── Dockerfile                # Dockerイメージ
-├── dashboard.py                   # Streamlitダッシュボード
+├── frontend/
+│   ├── src/
+│   │   ├── main.tsx               # Reactエントリーポイント
+│   │   ├── App.tsx                # メインアプリケーション
+│   │   ├── index.css              # グローバルスタイル
+│   │   ├── components/
+│   │   │   ├── Heatmap.tsx        # 感情ヒートマップ
+│   │   │   ├── Search.tsx         # 検索機能
+│   │   │   └── StockDetail.tsx    # 銘柄詳細
+│   │   ├── services/
+│   │   │   └── api.ts             # APIクライアント
+│   │   └── types/
+│   │       └── index.ts           # TypeScript型定義
+│   ├── package.json               # Node.js依存関係
+│   ├── vite.config.ts             # Vite設定
+│   ├── tailwind.config.js         # Tailwind CSS設定
+│   └── Dockerfile                 # Dockerイメージ
 ├── nginx/
 │   └── nginx.conf                # Nginxリバースプロキシ設定
 ├── docker-compose.yml             # Docker Compose設定
@@ -95,7 +114,7 @@ docker-compose up -d
 ```
 
 4. アプリケーションにアクセス
-- Dashboard: http://localhost:8501
+- Frontend: http://localhost:3000
 - Backend API: http://localhost:8000/api/docs
 - Health Check: http://localhost:8000/api/health/
 
@@ -127,18 +146,20 @@ python -c "from app.database import init_database; init_database()"
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-##### Frontendの起動（Streamlitダッシュボード）
+##### Frontendの起動（React + Vite）
 
 ```bash
-# 依存関係をインストール
-pip install -r requirements.txt
+cd frontend
 
-# ダッシュボードを起動
-streamlit run dashboard.py
+# Node.js依存関係をインストール
+npm install
+
+# 開発サーバーを起動
+npm run dev
 ```
 
 ##### アプリケーションにアクセス
-- Dashboard: http://localhost:8501
+- Frontend: http://localhost:3000
 - Backend API: http://localhost:8000/api/docs
 - Health Check: http://localhost:8000/api/health/
 
@@ -307,7 +328,7 @@ cronを使用して定期的にバッチ処理を実行できます：
 | DATABASE_URL | データベースのパス | newspy.db |
 | JWT_SECRET_KEY | JWTトークンの署名キー | your-secret-key-change-this-in-production |
 | ACCESS_TOKEN_EXPIRE_MINUTES | アクセストークンの有効期限（分） | 60 |
-| ALLOWED_ORIGINS | 許可するオリジン（カンマ区切り） | http://localhost:3000,http://localhost:8501 |
+| ALLOWED_ORIGINS | 許可するオリジン（カンマ区切り） | http://localhost:3000 |
 
 ### NewsAPIキーの取得
 
@@ -332,7 +353,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```bash
 cd frontend
 npm install
-npm start
+npm run dev
 ```
 
 ### テスト
