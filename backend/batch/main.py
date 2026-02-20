@@ -126,8 +126,8 @@ class NewsSpYBatchProcessor:
             print(f" ({len(articles)} articles)")
             return len(articles), added_count
         
-        # 並列処理（最大10スレッド）
-        with ThreadPoolExecutor(max_workers=10) as executor:
+        # 並列処理（最大3スレッド - NewsAPIレート制限回避）
+        with ThreadPoolExecutor(max_workers=3) as executor:
             futures = [executor.submit(fetch_company_articles, company) 
                       for company in NYSE_COMPANIES]
             
@@ -141,6 +141,8 @@ class NewsSpYBatchProcessor:
         """感情分析を実行（並列処理）"""
         import sqlite3
         from app.database import save_news_sentiment
+        
+        # メインスレッドで記事を取得
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         
@@ -154,53 +156,86 @@ class NewsSpYBatchProcessor:
         """)
         
         articles = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
         analyzed_count = 0
         
         def analyze_article(article):
             article_id, title, content, published_at, ticker = article
+            import time
             
-            # テキスト結合
-            text = f"{title} {content}"
+            # リトライ設定
+            max_retries = 5
+            retry_delay = 0.05  # 50ms
             
-            # センチメント分析
-            score, confidence = self.sentiment_analyzer.analyze(text)
+            for attempt in range(max_retries):
+                thread_conn = None
+                thread_cursor = None
+                try:
+                    # 各スレッドで独自のデータベース接続を作成
+                    thread_conn = sqlite3.connect(DB_PATH)
+                    thread_cursor = thread_conn.cursor()
+                    
+                    # テキスト結合
+                    text = f"{title} {content}"
+                    
+                    # センチメント分析
+                    score, confidence = self.sentiment_analyzer.analyze(text)
+                    
+                    # ラベルの決定
+                    if score > 0:
+                        label = "positive"
+                    elif score < 0:
+                        label = "negative"
+                    else:
+                        label = "neutral"
+                    
+                    # DB更新（articlesテーブル）
+                    thread_cursor.execute("""
+                        UPDATE articles
+                        SET sentiment_score = ?, sentiment_confidence = ?
+                        WHERE id = ?
+                    """, (score, confidence, article_id))
+                    
+                    thread_conn.commit()
+                    
+                    # news_sentimentsテーブルにも保存
+                    save_news_sentiment(
+                        ticker=ticker,
+                        published_at=published_at,
+                        sentiment_score=score,
+                        label=label
+                    )
+                    
+                    return 1
+                except sqlite3.OperationalError as e:
+                    if "database is locked" in str(e) and attempt < max_retries - 1:
+                        time.sleep(retry_delay * (attempt + 1))  # Exponential backoff
+                        continue
+                    else:
+                        print(f"  [ERROR] Failed to analyze article {article_id}: {e}")
+                        return 0
+                except Exception as e:
+                    print(f"  [ERROR] Failed to analyze article {article_id}: {e}")
+                    return 0
+                finally:
+                    if thread_cursor:
+                        thread_cursor.close()
+                    if thread_conn:
+                        thread_conn.close()
             
-            # ラベルの決定
-            if score > 0:
-                label = "positive"
-            elif score < 0:
-                label = "negative"
-            else:
-                label = "neutral"
-            
-            # DB更新（articlesテーブル）
-            cursor.execute("""
-                UPDATE articles 
-                SET sentiment_score = ?, sentiment_confidence = ?
-                WHERE id = ?
-            """, (score, confidence, article_id))
-            
-            # news_sentimentsテーブルにも保存
-            save_news_sentiment(
-                ticker=ticker,
-                published_at=published_at,
-                sentiment_score=score,
-                label=label
-            )
-            
-            return 1
+            return 0
         
         # 並列処理（最大5スレッド）
         with ThreadPoolExecutor(max_workers=5) as executor:
-            futures = [executor.submit(analyze_article, article) 
+            futures = [executor.submit(analyze_article, article)
                       for article in articles]
             
             for future in as_completed(futures):
                 with lock:
                     analyzed_count += future.result()
         
-        conn.commit()
-        conn.close()
         print(f"      ✓ {analyzed_count} articles analyzed")
     
     def _calculate_scores(self, target_date):

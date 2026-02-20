@@ -61,6 +61,10 @@ def init_database():
     with get_db_connection() as conn:
         cursor = conn.cursor()
         
+        # Enable WAL mode for better concurrency
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute("PRAGMA synchronous=NORMAL")
+        
         # Companies table
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS companies (
@@ -159,25 +163,39 @@ def add_article(
     sentiment_confidence: Optional[float] = None
 ) -> bool:
     """Add an article to the database"""
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
+    import time
+    max_retries = 3
+    retry_delay = 0.1  # 100ms
     
-    try:
-        cursor.execute("""
-            INSERT INTO articles (
-                company_id, title, content, source, source_url,
-                published_at, sentiment_score, sentiment_confidence
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            company_id, title, content, source, source_url,
-            published_at, sentiment_score, sentiment_confidence
-        ))
-        conn.commit()
-        conn.close()
-        return True
-    except sqlite3.IntegrityError:
-        conn.close()
-        return False
+    for attempt in range(max_retries):
+        try:
+            with get_db_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO articles (
+                        company_id, title, content, source, source_url,
+                        published_at, sentiment_score, sentiment_confidence
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    company_id, title, content, source, source_url,
+                    published_at, sentiment_score, sentiment_confidence
+                ))
+                conn.commit()
+                return True
+        except sqlite3.IntegrityError as e:
+            print(f"[DEBUG] IntegrityError for article: {title[:50]}... - {e}")
+            return False
+        except sqlite3.OperationalError as e:
+            if "database is locked" in str(e) and attempt < max_retries - 1:
+                time.sleep(retry_delay * (attempt + 1))  # Exponential backoff
+                continue
+            print(f"[DEBUG] Error adding article: {title[:50]}... - {type(e).__name__}: {e}")
+            return False
+        except Exception as e:
+            print(f"[DEBUG] Error adding article: {title[:50]}... - {type(e).__name__}: {e}")
+            return False
+    
+    return False
 
 def get_company_by_ticker(ticker: str) -> Optional[int]:
     """Get company ID by ticker"""

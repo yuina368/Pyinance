@@ -12,6 +12,7 @@ services:
       - ./backend:/app
       - newspy-data:/app/data
     environment:
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8501,http://localhost
       - DATABASE_URL=/app/data/newspy.db
       - NEWSAPI_KEY=${NEWSAPI_KEY:-demo}
     restart: unless-stopped
@@ -30,7 +31,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - REACT_APP_API_URL=http://localhost:8000/api
+      - VITE_API_URL=/api
     depends_on:
       - backend
     restart: unless-stopped

@@ -9,8 +9,7 @@ import type {
   ModelStatusResponse,
 } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
@@ -50,13 +49,29 @@ export const apiService = {
     limit?: number;
     sentiment_filter?: string;
   }): Promise<Score[]> {
-    const response = await api.get<Score[]>(`/scores/ranking/${date}`, { params });
-    return response.data;
+    console.log(`[DEBUG] getScores called with date: ${date}, params:`, params);
+    console.log(`[DEBUG] API URL: ${API_BASE_URL}/scores/ranking/${date}`);
+    try {
+      const response = await api.get<Score[]>(`/scores/ranking/${date}`, { params });
+      console.log(`[DEBUG] getScores response:`, response.data);
+      return response.data;
+    } catch (error) {
+      console.error(`[DEBUG] getScores error:`, error);
+      throw error;
+    }
   },
 
   async calculateScores(date: string): Promise<{ companies_scored: number }> {
-    const response = await api.post<{ companies_scored: number }>(`/scores/calculate/${date}`);
-    return response.data;
+    console.log(`[DEBUG] calculateScores called with date: ${date}`);
+    console.log(`[DEBUG] API URL: ${API_BASE_URL}/scores/calculate/${date}`);
+    try {
+      const response = await api.post<{ companies_scored: number }>(`/scores/calculate/${date}`);
+      console.log(`[DEBUG] calculateScores response:`, response.data);
+      return response.data;
+    } catch (error) {
+      console.error(`[DEBUG] calculateScores error:`, error);
+      throw error;
+    }
   },
 
   // Sentiments

@@ -8,6 +8,9 @@ interface HeatmapProps {
 }
 
 export const Heatmap = ({ scores, onStockClick }: HeatmapProps) => {
+  console.log(`[DEBUG] Heatmap component received scores:`, scores);
+  console.log(`[DEBUG] Heatmap scores length: ${scores.length}`);
+  
   const getScoreColor = (score: number): string => {
     if (score > 0.2) return 'bg-green-600';
     if (score > 0.1) return 'bg-green-500';

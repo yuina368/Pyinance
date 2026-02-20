@@ -94,7 +94,29 @@ newspy/
 
 ### インストール
 
-#### 方法1: Docker Composeを使用（推奨）
+#### 方法1: シェルスクリプトを使用（最も簡単）
+
+**⚡ ワンコマンドで起動:**
+
+```bash
+./start_server.sh
+```
+
+このスクリプトは以下の処理を自動的に行います：
+- 既存のコンテナの停止・削除
+- 未使用のDockerリソースのクリーンアップ
+- Docker Composeでのサーバー起動
+- ヘルスチェックと起動確認
+
+**📱 アプリケーションにアクセス:**
+- Frontend: http://localhost:3000
+- Main: http://localhost
+- Backend API: http://localhost:8000/api/docs
+- Health Check: http://localhost:8000/api/health/
+
+---
+
+#### 方法2: Docker Composeを使用（推奨）
 
 1. リポジトリをクローン
 ```bash
@@ -243,7 +265,65 @@ GET /api/model/status
 
 詳細なAPIドキュメントは、[http://localhost/api/docs](http://localhost/api/docs) で確認できます。
 
-## 🔄 バッチ処理
+## 🖥️ サーバー管理
+
+### サーバーの起動
+
+**⚡ シェルスクリプトを使用（推奨）:**
+```bash
+./start_server.sh
+```
+
+**🔧 Docker Composeを使用:**
+```bash
+docker-compose up -d
+```
+
+### サーバーの停止
+
+```bash
+docker-compose down
+```
+
+### サーバーの再起動
+
+```bash
+docker-compose restart
+```
+
+### サーバーのステータス確認
+
+```bash
+docker-compose ps
+```
+
+### ログの確認
+
+```bash
+# すべてのログ
+docker-compose logs -f
+
+# 特定のサービスのログ
+docker-compose logs -f backend
+docker-compose logs -f frontend
+docker-compose logs -f nginx
+```
+
+### コンテナの再ビルド
+
+```bash
+# キャッシュなしで再ビルド
+docker-compose build --no-cache
+
+# 特定のサービスのみ再ビルド
+docker-compose build backend
+docker-compose build frontend
+
+# 再ビルドして起動
+docker-compose up -d --build
+```
+
+## � バッチ処理
 
 バッチ処理は以下の手順で実行されます：
 
@@ -338,6 +418,16 @@ cronを使用して定期的にバッチ処理を実行できます：
 
 ## 📝 開発
 
+### クイックスタート（開発）
+
+```bash
+# サーバーを起動
+./start_server.sh
+
+# または手動で起動
+docker-compose up -d
+```
+
 ### Backend開発
 
 ```bash
@@ -370,6 +460,32 @@ npm test
 
 ## 🐛 トラブルシューティング
 
+### サーバーが起動しない
+
+**シェルスクリプトを使用する場合:**
+```bash
+# スクリプトを実行
+./start_server.sh
+```
+
+**手動で起動する場合:**
+```bash
+# 既存のコンテナを停止・削除
+docker-compose down
+
+# 未使用のDockerリソースをクリーンアップ
+docker system prune -f
+
+# サーバーを起動
+docker-compose up -d
+
+# ステータスを確認
+docker-compose ps
+
+# ログを確認
+docker-compose logs -f
+```
+
 ### FinBERTモデルが読み込めない
 
 ```bash
@@ -398,6 +514,18 @@ docker-compose logs nginx
 # 再ビルド
 docker-compose build --no-cache
 docker-compose up -d
+```
+
+### ポートが既に使用されている
+
+```bash
+# ポートを使用しているプロセスを確認
+lsof -i :8000
+lsof -i :3000
+lsof -i :80
+
+# プロセスを強制終了
+kill -9 <PID>
 ```
 
 ## 📄 ライセンス
